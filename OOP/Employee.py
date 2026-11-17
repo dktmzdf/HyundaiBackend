@@ -112,45 +112,106 @@ class Employee:
             f"{sal.get_total():<8}{sal.get_tax():<8}{sal.get_net():<8}"
         )
 
+    def get_employee_total(self):
+        return self.salary.get_total()
+
     def __del__(self):
         pass
 
 
-employees = [
-    Employee(
-        300,
-        50,
-        20,
-        "김민수",
-        "개발팀",
-        [WorkHistory("소프트웍스", "개발자", 2017, 2024)],
-    ),
-    Employee(
-        320, 40, 30, "이지은", "인사팀", [WorkHistory("휴먼랩", "인사담당", 2020, 2024)]
-    ),
-    Employee(280, 60, 10, "박준호", "영업팀"),
-    Employee(
-        350,
-        30,
-        25,
-        "최서연",
-        "개발팀",
-        [
-            WorkHistory("데이터랩", "분석가", 2013, 2017),
-            WorkHistory("클라우드원", "엔지니어", 2017, 2021),
-            WorkHistory("넥스트AI", "리드", 2021, 2024),
-        ],
-    ),
-    Employee(
-        300,
-        70,
-        15,
-        "한도윤",
-        "마케팅팀",
-        [WorkHistory("브랜드웍스", "마케터", 2021, 2024)],
-    ),
-]
+class Department:
+    def __init__(self, name, employees: list[Employee]):
+        self.name = name
+        self.employee = employees
 
-print(f"{'이름':<6}{'부서':<8}{'경력':<4}{'총액':<6}{'세금':<6}{'실수령액':<4}")
-for emp in employees:
-    print(emp.to_string())
+    def add_employee(self, employee: Employee):
+        self.employee.append(employee)
+
+    def get_avg_career(self):
+        return sum([x.get_career() for x in self.employee]) / len(self.employee)
+
+    def get_payroll(self):
+        return sum([x.get_employee_total() for x in self.employee])
+
+    def print_members(self):
+        print(f"{'이름':<6}{'부서':<8}{'경력':<4}{'총액':<6}{'세금':<6}{'실수령액':<4}")
+        for emp in self.employee:
+            print(emp.to_string())
+        return
+
+    def get_department_employee_count(self):
+        return len(self.employee)
+
+
+class Company:
+    def __init__(self, name: str, department: list[Department]):
+        self.name = name
+        self.department = department
+
+    def add_department(self, department: Department):
+        self.department.append(department)
+
+    def get_employee_count(self):
+        return sum([x.get_department_employee_count() for x in self.department])
+
+    def get_payroll(self):
+        return sum([x.get_payroll() for x in self.department])
+
+    def print_report(self):
+        for x in self.department:
+            x.print_members()
+            print()
+
+    def new_employee(
+        self,
+        name,
+        salary: Salary,
+        histories: list[WorkHistory] | None,
+        department: str,
+    ):
+        emp = Employee(
+            salary.base_pay, salary.bonus, salary.overtime, name, department, histories
+        )
+
+        for dept in self.department:
+            if dept.name == department:
+                dept.add_employee(emp)
+                return
+
+        self.add_department(Department(department, [emp]))
+        return
+
+
+company = Company("우리회사", [])
+
+company.new_employee(
+    "김민수",
+    Salary(300, 50, 20),
+    [WorkHistory("소프트웍스", "개발자", 2017, 2024)],
+    "개발팀",
+)
+company.new_employee(
+    "이지은",
+    Salary(320, 40, 30),
+    [WorkHistory("휴먼랩", "인사담당", 2020, 2024)],
+    "인사팀",
+)
+company.new_employee("박준호", Salary(280, 60, 10), None, "영업팀")
+company.new_employee(
+    "최서연",
+    Salary(350, 30, 25),
+    [
+        WorkHistory("데이터랩", "분석가", 2013, 2017),
+        WorkHistory("클라우드원", "엔지니어", 2017, 2021),
+        WorkHistory("넥스트AI", "리드", 2021, 2024),
+    ],
+    "개발팀",
+)
+company.new_employee(
+    "한도윤",
+    Salary(300, 70, 15),
+    [WorkHistory("브랜드웍스", "마케터", 2021, 2024)],
+    "마케팅팀",
+)
+
+company.print_report()
